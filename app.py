@@ -14,7 +14,7 @@ database_url = os.environ.get('DATABASE_URL')
 if database_url and database_url.startswith('mysql'):
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mapa_violeta.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/mapa_violeta.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -24,7 +24,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Por favor, faça login para acessar esta página.'
 
-# Modelos
+# Modelos (mantenha os mesmos modelos que já estão no seu código)
 class Usuario(UserMixin, db.Model):
     __tablename__ = 'usuarios'
     id = db.Column(db.Integer, primary_key=True)
@@ -76,15 +76,44 @@ class MapaComentario(db.Model):
 def load_user(user_id):
     return Usuario.query.get(int(user_id))
 
-# Funções auxiliares
+# Função para criar tabelas se não existirem
+def criar_tabelas_se_necessario():
+    try:
+        with app.app_context():
+            # Verifica se a tabela usuarios existe
+            insp = db.inspect(db.engine)
+            if 'usuarios' not in insp.get_table_names():
+                print("📦 Criando tabelas do banco de dados...")
+                db.create_all()
+                print("✅ Tabelas criadas com sucesso!")
+                
+                # Criar usuário admin padrão
+                admin_user = Usuario.query.filter_by(email='admin@mapavioleta.com').first()
+                if not admin_user:
+                    admin_user = Usuario(
+                        nick_usuario='admin',
+                        email='admin@mapavioleta.com',
+                        pronomes='ele/dele',
+                        is_admin=True
+                    )
+                    admin_user.set_password('admin123')
+                    db.session.add(admin_user)
+                    db.session.commit()
+                    print("✅ Usuário admin criado: admin@mapavioleta.com / admin123")
+            else:
+                print("✅ Tabelas já existem no banco de dados")
+    except Exception as e:
+        print(f"❌ Erro ao criar tabelas: {e}")
+
+# Executar a criação de tabelas quando o app iniciar
+criar_tabelas_se_necessario()
+
+# Funções auxiliares (mantenha as mesmas)
 def formatar_data_tempo_decorrido(data):
-    """Formata a data para mostrar tempo decorrido"""
     if not data:
         return ""
-    
     agora = datetime.utcnow()
     diferenca = agora - data
-    
     if diferenca.days > 365:
         return f"há {diferenca.days // 365} ano(s)"
     elif diferenca.days > 30:
@@ -99,17 +128,15 @@ def formatar_data_tempo_decorrido(data):
         return "agora mesmo"
 
 def validar_email(email):
-    """Valida formato de email"""
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
 def validar_senha(senha):
-    """Valida força da senha"""
     if len(senha) < 6:
         return False, "A senha deve ter pelo menos 6 caracteres"
     return True, ""
 
-# Rotas principais
+# Rotas principais (mantenha todas as rotas existentes)
 @app.route('/')
 def index():
     if current_user.is_authenticated:
@@ -204,6 +231,7 @@ def cadastro():
     
     return render_template('cadastro.html')
 
+# Mantenha todas as outras rotas API existentes...
 @app.route('/logout')
 @login_required
 def logout():
@@ -213,12 +241,10 @@ def logout():
     flash('Você saiu da sua conta.', 'info')
     return redirect(url_for('login'))
 
-# API Routes
 @app.route('/api/mapa-violeta/get-pontos-mapa')
 @login_required
 def get_pontos_mapa():
     try:
-        # Aplicar filtros
         filtro_tipo = request.args.get('filtro_tipo_registro')
         filtro_usuario = request.args.get('filtro_usuario')
         filtro_data_de = request.args.get('filtro_data_de')
@@ -272,6 +298,7 @@ def get_pontos_mapa():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# Mantenha todas as outras rotas API...
 @app.route('/api/mapa-violeta/registrar-ponto-mapa', methods=['POST'])
 @login_required
 def registrar_ponto_mapa():
@@ -376,13 +403,10 @@ def registrar_mapa_comentario():
 @login_required
 def update_user_location():
     try:
-        # Atualizar última visualização
         current_user.ultima_visualizacao = datetime.utcnow()
         current_user.online = True
         db.session.commit()
-        
         return jsonify({'success': True})
-        
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -390,9 +414,7 @@ def update_user_location():
 @login_required
 def get_users_locations():
     try:
-        # Usuários online nos últimos 5 minutos
         cinco_minutos_atras = datetime.utcnow().timestamp() - 300
-        
         usuarios_online = Usuario.query.filter(
             Usuario.online == True,
             db.func.unix_timestamp(Usuario.ultima_visualizacao) > cinco_minutos_atras
@@ -411,7 +433,6 @@ def get_users_locations():
                 })
         
         return jsonify({'success': True, 'users': resultado})
-        
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -421,23 +442,4 @@ def perfil():
     return render_template('perfil.html', usuario=current_user)
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        # Criar um usuário admin padrão para testes
-        try:
-            admin_user = Usuario.query.filter_by(email='admin@mapavioleta.com').first()
-            if not admin_user:
-                admin_user = Usuario(
-                    nick_usuario='admin',
-                    email='admin@mapavioleta.com',
-                    pronomes='ele/dele',
-                    is_admin=True
-                )
-                admin_user.set_password('admin123')
-                db.session.add(admin_user)
-                db.session.commit()
-                print("✅ Usuário admin criado: admin@mapavioleta.com / admin123")
-        except Exception as e:
-            print(f"⚠️  Não foi possível criar usuário admin: {e}")
-    
     app.run(debug=os.environ.get('DEBUG', False), host='0.0.0.0', port=5000)
