@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Violeta CNV 🗺️ Reprograma-T</title>
+    
+    <link rel="icon" href="/static/images/logo.jpeg" sizes="any"> 
+    <link rel="apple-touch-icon" href="/static/images/logo.jpeg">
+    <meta name="theme-color" content="#FFA500">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link rel="stylesheet" href="/static/css/layout_header.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="pagina-mapa-violeta">
+    {% include 'layout_header.html' %}
+
+    <div class="app-main-container">
+        <main class="main-content-area">
+            <section class="mapa-violeta-main-area">
+                <div class="mapa-violeta-header-secao">
+                    <h1><i class="fas fa-map-marked-alt"></i> Mapa Violeta CNV</h1>
+                    <p class="subtitulo-mapa">Partilhe suas experiências e observações. Clique no mapa para adicionar um registro.<br>
+                    <span id="location-status-message" style="font-size:0.9em; opacity:0.8;">
+                        Para ver outros usuários próximos, permita o acesso à sua localização.
+                    </span></p>
+                </div>
+                
+                <div id="map"></div>
+
+                <!-- Formulário de Filtros -->
+                <div class="mapa-filtros-container" id="mapaFiltrosContainer">
+                    <h4><i class="fas fa-filter"></i> Filtrar Registros</h4>
+                    <form id="formFiltrosMapa">
+                        <div class="filtro-grupo">
+                            <label for="filtro_tipo_registro">Tipo de Registro:</label>
+                            <select name="filtro_tipo_registro" id="filtro_tipo_registro">
+                                <option value="">Todos os Tipos</option>
+                                <option value="alerta_perigo">🚨 Alerta de Perigo</option>
+                                <option value="local_acolhedor">💖 Local Acolhedor</option>
+                                <option value="ponto_apoio">🤝 Ponto de Apoio</option>
+                                <option value="evento_positivo">🎉 Evento Positivo</option>
+                                <option value="denuncia_violencia">🗣️ Denúncia</option>
+                                <option value="reivindicacao_melhoria">🚧 Reivindicação</option>
+                            </select>
+                        </div>
+                        <div class="filtro-grupo">
+                            <label for="filtro_usuario">Por Usuário (@nick):</label>
+                            <input type="text" name="filtro_usuario" id="filtro_usuario" placeholder="Nick do usuário">
+                        </div>
+                        <div class="filtro-grupo">
+                            <label for="filtro_data_de">Data do Fato (De):</label>
+                            <input type="date" name="filtro_data_de" id="filtro_data_de">
+                        </div>
+                        <div class="filtro-grupo">
+                            <label for="filtro_data_ate">Data do Fato (Até):</label>
+                            <input type="date" name="filtro_data_ate" id="filtro_data_ate">
+                        </div>
+                        <div class="filtro-grupo">
+                            <label for="filtro_termo">Buscar em Observação/Pedido:</label>
+                            <input type="text" name="filtro_termo" id="filtro_termo" placeholder="Palavra-chave">
+                        </div>
+                        <div class="filtro-acoes">
+                            <button type="submit" class="btn btn--primary btn-sm"><i class="fas fa-search"></i> Aplicar Filtros</button>
+                            <button type="button" id="btnLimparFiltrosMapa" class="btn btn-sm"><i class="fas fa-times-circle"></i> Limpar Filtros</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div id="cnv-form-expander">
+                    <button id="toggle-cnv-form-btn"><i class="fas fa-plus-circle"></i> Novo Registro</button>
+                </div>
+
+                <div class="mapa-cnv-form-container" id="mapa-cnv-form">
+                    <h3><i class="fas fa-heartbeat"></i> Registrar Experiência/Observação</h3>
+                    <form id="cnv-form-mapa-interno">
+                        <input type="hidden" name="action" id="form-action" value="criar">
+                        <input type="hidden" name="registro_id_editar" id="form-registro-id-editar">
+                        <input type="hidden" name="latitude" id="form-latitude">
+                        <input type="hidden" name="longitude" id="form-longitude">
+                        <div>
+                            <label for="tipo_registro_mapa">Tipo de Registro:*</label>
+                            <select name="tipo_registro" id="tipo_registro_mapa" required>
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="alerta_perigo">🚨 Alerta de Perigo</option>
+                                <option value="local_acolhedor">💖 Local Acolhedor</option>
+                                <option value="ponto_apoio">🤝 Ponto de Apoio</option>
+                                <option value="evento_positivo">🎉 Evento Positivo</option>
+                                <option value="denuncia_violencia">🗣️ Denúncia</option>
+                                <option value="reivindicacao_melhoria">🚧 Reivindicação</option>
+                            </select>
+                        </div>
+                        <label for="cnv_observacao_mapa">1. Observação (Fatos)*:</label>
+                        <textarea name="observacao" id="cnv_observacao_mapa" required placeholder="Ex: Vi pichações..."></textarea>
+                        <label for="cnv_sentimento_mapa">2. Sentimento*:</label>
+                        <textarea name="sentimento" id="cnv_sentimento_mapa" required placeholder="Ex: Senti medo..."></textarea>
+                        <label for="cnv_necessidade_mapa">3. Necessidade*:</label>
+                        <textarea name="necessidade" id="cnv_necessidade_mapa" required placeholder="Ex: Necessidade de segurança..."></textarea>
+                        <label for="cnv_pedido_mapa">4. Pedido*:</label>
+                        <textarea name="pedido" id="cnv_pedido_mapa" required placeholder="Ex: Gostaria que a prefeitura limpasse..."></textarea>
+                        <div>
+                            <label for="descricao_adicional_mapa">Descrição Adicional:</label>
+                            <textarea name="descricao_adicional" id="descricao_adicional_mapa" placeholder="Mais detalhes..."></textarea>
+                        </div>
+                        <div>
+                            <label for="data_evento_ocorrido_mapa">Data e Hora do Fato:</label>
+                            <input type="datetime-local" name="data_evento_ocorrido" id="data_evento_ocorrido_mapa">
+                        </div>
+                        <button type="submit" id="submit-cnv-form-btn"><i class="fas fa-map-marker-alt"></i> Enviar Registro</button>
+                        <button type="button" id="cancel-cnv-form-btn">Cancelar</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    {% include 'modal_perfil_rapido.html' %}
+
+    <div class="location-permission-modal" id="location-permission-modal">
+        <div class="location-permission-content">
+            <h3><i class="fas fa-map-marker-alt"></i> Compartilhar Localização?</h3>
+            <p>Para mostrar outros usuários próximos no mapa e melhorar sua experiência, precisamos da sua permissão para acessar sua localização aproximada. Sua localização exata nunca será compartilhada.</p>
+            <div class="location-permission-buttons">
+                <button id="btn-permitir-localizacao" class="btn-permitir">Permitir</button>
+                <button id="btn-negar-localizacao" class="btn-negar">Agora Não</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

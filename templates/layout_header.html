@@ -1,0 +1,133 @@
+<header class="app-header">
+    <div class="header-container">
+        <div class="header-logo">
+            <a href="/" class="logo-link">
+                <img src="/static/images/logo.jpeg" alt="Logo Mapa Violeta" class="logo-img">
+                <span class="logo-text">Mapa Violeta CNV</span>
+            </a>
+        </div>
+        
+        <nav class="header-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="/" class="nav-link active"><i class="fas fa-map-marked-alt"></i> Mapa</a></li>
+                <li class="nav-item"><a href="/perfil" class="nav-link"><i class="fas fa-user"></i> Perfil</a></li>
+                {% if current_user.is_authenticated %}
+                <li class="nav-item"><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+                {% else %}
+                <li class="nav-item"><a href="/login" class="nav-link"><i class="fas fa-sign-in-alt"></i> Entrar</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+
+        {% if current_user.is_authenticated %}
+        <div class="header-user">
+            <div class="user-info">
+                <img src="{{ current_user.foto_perfil or '/static/images/avatar_padrao.png' }}" alt="Foto de perfil" class="user-avatar">
+                <span class="user-name">{{ current_user.nick_usuario }}</span>
+                {% if current_user.is_admin %}
+                <span class="admin-badge">ADMIN</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+<style>
+.app-header {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    padding: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 70px;
+}
+
+.header-logo .logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+}
+
+.logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.logo-text {
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.header-nav .nav-list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 20px;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.nav-link:hover, .nav-link.active {
+    background-color: rgba(255,255,255,0.2);
+}
+
+.header-user .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.admin-badge {
+    background: #ff6b6b;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+    }
+    
+    .nav-list {
+        margin: 10px 0;
+    }
+    
+    .logo-text {
+        font-size: 1.2em;
+    }
+}
+</style>

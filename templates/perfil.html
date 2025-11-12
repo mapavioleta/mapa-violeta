@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil - Mapa Violeta CNV</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="pagina-mapa-violeta">
+    {% include 'layout_header.html' %}
+
+    <div class="app-main-container">
+        <main class="main-content-area">
+            <div class="profile-page">
+                <h1><i class="fas fa-user"></i> Meu Perfil</h1>
+                
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <img src="{{ usuario.foto_perfil or '/static/images/avatar_padrao.png' }}" alt="Foto de perfil" class="profile-avatar">
+                        <div class="profile-info">
+                            <h2>{{ usuario.nick_usuario }}</h2>
+                            <p><strong>Pronomes:</strong> {{ usuario.pronomes or 'Não informado' }}</p>
+                            <p><strong>Membro desde:</strong> {{ usuario.created_at.strftime('%d/%m/%Y') }}</p>
+                            {% if usuario.is_admin %}
+                            <span class="admin-badge">Administrador</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <h3>{{ usuario.registros_mapa|length }}</h3>
+                            <p>Registros no Mapa</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3>{{ usuario.comentarios_mapa|length }}</h3>
+                            <p>Comentários</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3>{% if usuario.online %}Online{% else %}Offline{% endif %}</h3>
+                            <p>Status</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <a href="/" class="btn btn--primary">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Mapa
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

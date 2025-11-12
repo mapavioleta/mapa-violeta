@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Mapa Violeta CNV</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        .password-requirements {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .login-footer a {
+            color: #9b59b6;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <img src="/static/images/logo.jpeg" alt="Logo" class="login-logo">
+            <h1>Mapa Violeta CNV</h1>
+            <p>Crie sua conta</p>
+        </div>
+
+        <!-- Mensagens Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'error' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="login-form">
+            <div class="form-group">
+                <label for="nick">Nickname*:</label>
+                <input type="text" id="nick" name="nick" required 
+                       placeholder="Seu nome de usuário" value="{{ request.form.nick if request.form }}">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email*:</label>
+                <input type="email" id="email" name="email" required 
+                       placeholder="seu@email.com" value="{{ request.form.email if request.form }}">
+            </div>
+
+            <div class="form-group">
+                <label for="pronomes">Pronomes:</label>
+                <select id="pronomes" name="pronomes">
+                    <option value="">Selecione...</option>
+                    <option value="ele/dele" {% if request.form.pronomes == 'ele/dele' %}selected{% endif %}>ele/dele</option>
+                    <option value="ela/dela" {% if request.form.pronomes == 'ela/dela' %}selected{% endif %}>ela/dela</option>
+                    <option value="elu/delu" {% if request.form.pronomes == 'elu/delu' %}selected{% endif %}>elu/delu</option>
+                    <option value="outro">outro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="senha">Senha*:</label>
+                <input type="password" id="senha" name="senha" required 
+                       placeholder="Mínimo 6 caracteres">
+                <div class="password-requirements">
+                    A senha deve ter pelo menos 6 caracteres
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmar_senha">Confirmar Senha*:</label>
+                <input type="password" id="confirmar_senha" name="confirmar_senha" required 
+                       placeholder="Digite a senha novamente">
+            </div>
+
+            <button type="submit" class="btn btn--primary btn-block">
+                <i class="fas fa-user-plus"></i> Criar Conta
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p>Já tem conta? <a href="{{ url_for('login') }}">Faça login aqui</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Validação em tempo real da senha
+        document.getElementById('senha')?.addEventListener('input', function() {
+            const requirements = this.nextElementSibling;
+            if (this.value.length < 6) {
+                requirements.style.color = '#dc3545';
+            } else {
+                requirements.style.color = '#28a745';
+            }
+        });
+
+        // Validação de confirmação de senha
+        document.getElementById('confirmar_senha')?.addEventListener('input', function() {
+            const senha = document.getElementById('senha').value;
+            if (this.value !== senha) {
+                this.style.borderColor = '#dc3545';
+            } else {
+                this.style.borderColor = '#28a745';
+            }
+        });
+    </script>
+</body>
+</html>
